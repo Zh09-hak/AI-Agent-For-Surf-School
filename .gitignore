@@ -9,12 +9,6 @@ __pycache__/
 # Secrets
 .env
 
-# Application data
-data/
-*.db
-*.sqlite
-*.sqlite3
-
 # IDE
 .vscode/
 .idea/
