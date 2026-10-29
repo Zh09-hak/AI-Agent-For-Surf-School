@@ -1,18 +1,35 @@
-# app.py
 import json
 from datetime import datetime, timedelta
 from pathlib import Path
 import streamlit as st
+import csv
+import os
+from dotenv import load_dotenv
 
-REQUESTS = Path("data/requests.json")
-DECISIONS = Path("data/decisions.json")
+load_dotenv()
+
+
+BASE = Path(__file__).parent
+REQUESTS = BASE / "data" / "requests.json"
+DECISIONS = BASE / "data" / "decisions.json"
 
 STATUSES = ["pending", "needs_manual_review"]
 INTENTS = ["new_booking", "cancellation", "reschedule", "question"]
 LESSONS = ["beginner", "intermediate", "advanced", "private", "group", "unknown"]
-INSTRUCTORS = ["Alex"]  # TODO: load from project/data/staff_availability.csv
+
+def load_instructors():
+    csv_path = BASE.parent / "project" / "data" / "staff_availability.csv"
+    instructors = set()
+    if csv_path.exists():
+        with open(csv_path, "r", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                name = row.get("instructor") or row.get("name")
+                if name: instructors.add(name)
+    return list(instructors) or ["Alex"]
+
+INSTRUCTORS = load_instructors()
 TZ = "+04:00"
-DEFAULT_MINUTES = 60  # UI default for calendar_end; confirm with backend
+DEFAULT_MINUTES = 60
 
 
 def read(path):
@@ -25,16 +42,22 @@ def write(path, data):
 
 
 def create_calendar_event(p):
-    """Wrap integrations/calendar.py; adjust to its real function name and args."""
     try:
-        from integrations.calendar import create_event
-        return create_event(
-            summary=f"{p['lesson_type']} lesson - {p['student_name']}",
-            start=p["calendar_start"],
-            end=p["calendar_end"],
+        from integrations.calendar import create_calendar_event as gcal_create
+        
+        calendar_id = os.getenv("GOOGLE_CALENDAR_ID")
+        
+        event = gcal_create(
+            calendar_id=calendar_id,
+            summary=f"{p['lesson_type']} lesson - {p.get('student_name', 'Unknown')}",
+            start_time=p["calendar_start"],
+            end_time=p["calendar_end"],
+            description=f"Instructor: {p.get('assigned_instructor', 'TBD')}\nStudents: {p.get('number_of_students', 1)}"
         )
-    except ImportError:
-        return f"fake_event_{p['source_id']}"  # stub until the integration works
+        return event["id"] if isinstance(event, dict) else str(event)
+    except Exception as e:
+        print(f"⚠️ Calendar error: {e}")
+        return f"fake_event_{p['source_id']}"
 
 
 def build_calendar(date_str, time_str):
