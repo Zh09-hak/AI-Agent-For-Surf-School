@@ -498,11 +498,6 @@ def parse_email(raw_email: str, source_id: str = "unknown") -> dict:
     requested = extracted["requested_instructor"]
     intent = extracted["intent"]
 
-    assigned = {
-        "assigned_instructor": None,
-        "reason": "Needs manual review"
-    }
-
     missing_fields = []
 
     if intent == "new_booking":
@@ -514,12 +509,6 @@ def parse_email(raw_email: str, source_id: str = "unknown") -> dict:
 
         if not name:
             missing_fields.append("student_name")
-
-        if date and time and lesson_type != "unknown":
-            assigned = find_instructor(date, time, lesson_type, requested)
-
-    if manual_override:
-        assigned["reason"] = "Large/group lesson needs manual review"
 
     calendar_start = None
     calendar_end = None
@@ -542,15 +531,7 @@ def parse_email(raw_email: str, source_id: str = "unknown") -> dict:
         "time": time,
         "number_of_students": num_students,
         "requested_instructor": requested,
-        "assigned_instructor": assigned["assigned_instructor"],
-        "assignment_reason": assigned["reason"],
         "missing_fields": missing_fields,
-        "status": "pending" if (
-            intent == "new_booking"
-            and not missing_fields
-            and assigned["assigned_instructor"]
-            and not manual_override
-        ) else "needs_manual_review",
         "calendar_start": calendar_start,
         "calendar_end": calendar_end,
         "raw_text": raw_email.strip()
