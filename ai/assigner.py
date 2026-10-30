@@ -1,15 +1,23 @@
 import csv
 import os
+from pathlib import Path
 from datetime import datetime, timedelta
 
-def get_staff_from_csv(csv_path="project/data/staff_availability.csv"):
+ROOT = Path(__file__).resolve().parent.parent
+
+def get_staff_from_csv(csv_path=None):
+    if csv_path is None:
+        csv_path = ROOT / "project" / "data" / "staff_availability.csv"
+    csv_path = Path(csv_path)
+
     staff = []
-    if not os.path.exists(csv_path):
+    if not csv_path.exists():
         return staff
+
     with open(csv_path, mode="r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            available = row.get("available", "true").lower()
+            available = (row.get("available") or "true").lower()
             if available in ["true", "1", "yes", ""]:
                 staff.append(row)
     return staff

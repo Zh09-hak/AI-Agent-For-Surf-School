@@ -1,9 +1,14 @@
 import os
+from pathlib import Path
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
-SERVICE_ACCOUNT_FILE = 'credentials.json'
+ROOT = Path(__file__).resolve().parent.parent
+SERVICE_ACCOUNT_FILE = os.getenv(
+    "GOOGLE_SERVICE_ACCOUNT_FILE",
+    str(ROOT / "credentials.json")
+)
 
 def get_calendar_service():
     creds = Credentials.from_service_account_file(

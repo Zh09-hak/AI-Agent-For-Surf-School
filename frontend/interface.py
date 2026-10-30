@@ -4,9 +4,14 @@ from pathlib import Path
 import streamlit as st
 import csv
 import os
+import sys
 from dotenv import load_dotenv
 
-load_dotenv()
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+load_dotenv(ROOT / ".env")
 
 
 BASE = Path(__file__).parent
@@ -42,11 +47,14 @@ def write(path, data):
 
 
 def create_calendar_event(p):
+    from integrations.calendar import create_calendar_event as gcal_create
+
+    calendar_id = os.getenv("GOOGLE_CALENDAR_ID")
+    if not calendar_id:
+        st.error("GOOGLE_CALENDAR_ID is not set in .env")
+        return None
+
     try:
-        from integrations.calendar import create_calendar_event as gcal_create
-        
-        calendar_id = os.getenv("GOOGLE_CALENDAR_ID")
-        
         event = gcal_create(
             calendar_id=calendar_id,
             summary=f"{p['lesson_type']} lesson - {p.get('student_name', 'Unknown')}",
@@ -56,8 +64,8 @@ def create_calendar_event(p):
         )
         return event["id"] if isinstance(event, dict) else str(event)
     except Exception as e:
-        print(f"⚠️ Calendar error: {e}")
-        return f"fake_event_{p['source_id']}"
+        st.error(f"Calendar API error: {e}")
+        return None
 
 
 def build_calendar(date_str, time_str):
