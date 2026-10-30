@@ -86,6 +86,24 @@ def decide(items, i, decision, event_id=None):
                 "decided_at": datetime.now().isoformat(timespec="seconds"), "request": p})
     write(DECISIONS, log)
     write(REQUESTS, items)
+    print(f"🔍 UI вызвал decide() для {p['source_id']}, decision={decision}")
+
+    try:
+        from integrations import db
+        if decision == "approved":
+            print(f"📞 Calling db.confirm_booking({p['source_id']}, {p.get('assigned_instructor')}, {event_id})")
+            db.confirm_booking(p["source_id"], p.get("assigned_instructor"), event_id, actor="human")
+            print(f"✅ db.confirm_booking() успешно завершён")
+        else:
+            print(f"📞 Calling db.reject_proposal({p['source_id']})")
+            db.reject_proposal(p["source_id"], actor="human")
+            print(f"✅ db.reject_proposal() успешно завершён")
+    except Exception as e:
+        print(f"❌ ERROR in db.confirm_booking(): {e}")
+        import traceback
+        traceback.print_exc()
+        st.error(f"DB write failed: {e}")
+
     st.session_state["msg"] = (
         f"Approved. Calendar event {event_id} created." if decision == "approved"
         else f"Rejected {p['source_id']}."
@@ -115,6 +133,10 @@ def requests_page():
         key = f"{i}_{p['source_id']}"
 
         with st.expander(title):
+            if p.get("safety_flags"):
+                st.error("⚠ Safety flags: " + ", ".join(p["safety_flags"]))
+            if p.get("gate_reason"):
+                st.info(f"Gate: {p['gate_reason']}")
             if p.get("missing_fields"):
                 st.warning("Missing: " + ", ".join(p["missing_fields"]))
             if no_instructor:
@@ -133,6 +155,9 @@ def requests_page():
                 p["assigned_instructor"] = choice
                 p["assignment_reason"] = "manual assignment"
                 write(REQUESTS, items)
+                from integrations import db
+                db.update_proposal(p["source_id"], assigned_instructor=choice,
+                                assignment_reason="manual assignment")
                 st.rerun()
 
             can_approve = (p["intent"] == "new_booking" and p.get("assigned_instructor")

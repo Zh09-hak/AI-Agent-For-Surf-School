@@ -6,6 +6,11 @@ __pycache__/
 *.pyd
 *.egg-info/
 
+# Tests
+test*
+check_groq.py
+db_test.py
+
 # Secrets
 .env
 credentials.json

@@ -12,7 +12,8 @@ except ImportError:
 
 load_dotenv()
 
-TODAY = datetime(2026, 10, 28)
+_today_override = os.getenv("SYSTEM_TODAY")
+TODAY = datetime.strptime(_today_override, "%Y-%m-%d") if _today_override else datetime.now()
 
 api_key = os.getenv("GROQ_API_KEY")
 client = Groq(api_key=api_key) if Groq and api_key else None
