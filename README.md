@@ -12,13 +12,13 @@ Turns unstructured booking emails into validated, calendar-ready lessons, with a
 ![SQLite](https://img.shields.io/badge/Database-SQLite-003B57?logo=sqlite&logoColor=white)
 ![Google Calendar](https://img.shields.io/badge/Google%20Calendar-API-4285F4?logo=googlecalendar&logoColor=white)
 
-[Features](#-features) · [Architecture](#-architecture) · [Quick Start](#-quick-start) · [Configuration](#-configuration) · [Roadmap](#-roadmap)
+[Features](#features) · [Architecture](#architecture) · [Quick Start](#quick-start) · [Configuration](#configuration) · [Roadmap](#roadmap)
 
 </div>
 
 ---
 
-## 📖 Overview
+## Overview
 
 Surf schools often handle lesson requests by email: someone reads every message, checks instructor availability, and creates bookings by hand. This project automates that workflow.
 
@@ -26,21 +26,21 @@ The system monitors an inbox, uses an LLM to extract booking details, matches cu
 
 **Core idea:** the LLM *understands* the email, and deterministic Python logic *makes the decisions*.
 
-## ✨ Features
+## Features
 
-### 🤖 AI Email Understanding
+### AI Email Understanding
 - Structured extraction from free-form emails using Groq-hosted Llama models
 - Intent detection: **new booking**, **cancellation**, **rescheduling**, **general question**
 - Extracts customer name, lesson type, date, time, and group size
 - Automatic **regex fallback** when the LLM is unavailable or returns invalid data
 
-### 🧑‍🏫 Instructor Assignment
+### Instructor Assignment
 - Matches instructors by availability, qualifications, and skill level
 - Honors customer-requested instructors
 - Calculates remaining instructor capacity and checks existing bookings
 - Routes requests with no suitable instructor to manual review
 
-### 🛡️ Safety & Validation Layer
+### Safety & Validation Layer
 Every request passes through a dedicated validation engine before auto-approval:
 
 | Check | Description |
@@ -54,12 +54,12 @@ Every request passes through a dedicated validation engine before auto-approval:
 | Capacity | Instructor availability and remaining capacity |
 | Eligibility | Allowed lesson types and group sizes for auto-approval |
 
-### 📅 Google Calendar Integration
+### Google Calendar Integration
 - Creates events for approved lessons with lesson, instructor, and customer details
 - Configurable calendar ID
 - Google Service Account authentication
 
-### 👤 Human-in-the-Loop Dashboard
+### Human-in-the-Loop Dashboard
 A Streamlit interface where administrators can:
 - Browse incoming requests and inspect extracted data
 - Review safety flags and validation results
@@ -67,13 +67,13 @@ A Streamlit interface where administrators can:
 - Approve or reject requests
 - Create and edit bookings
 
-### 🗄️ Storage & Auditability
+### Storage & Auditability
 - SQLite persistence with separate records for emails, proposals, and confirmed bookings
 - Duplicate email detection via message IDs and content hashes
 - Database-level protection against double-booking an instructor
 - Audit log of every system and human decision
 
-## 🏗️ Architecture
+## Architecture
 
 The application is modular: AI processing, business logic, integrations, and the UI are fully separated.
 
@@ -145,7 +145,7 @@ AI-Agent-For-Surf-School/
 └── app.py                   # Booking pipeline entry point
 ```
 
-## 🧰 Tech Stack
+## Tech Stack
 
 | Technology | Purpose |
 |---|---|
@@ -158,7 +158,7 @@ AI-Agent-For-Surf-School/
 | IMAP | Email retrieval |
 | Pandas / CSV | Staff availability data |
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Python 3.10+
@@ -180,7 +180,7 @@ pip install -r requirements.txt
 
 ### 2. Configure environment
 
-Copy `.env.example` to `.env` and fill in your values (see [Configuration](#-configuration)).
+Copy `.env.example` to `.env` and fill in your values (see [Configuration](#configuration)).
 
 > [!WARNING]
 > Never commit `.env`, Google credentials, API keys, or email passwords to GitHub.
@@ -216,7 +216,7 @@ streamlit run frontend/interface.py
 
 The dashboard is available at **http://localhost:8501**.
 
-## ⚙️ Configuration
+## Configuration
 
 <details>
 <summary><b>Example <code>.env</code></b></summary>
@@ -266,14 +266,14 @@ DATABASE_PATH=project/data/surf_school.db
 > [!TIP]
 > Start with `AUTO_APPROVE_MODE=shadow` and a dedicated test calendar. Switch to `live` only after you have verified the full workflow and business rules. Even in `live` mode, requests that fail validation are sent to human review.
 
-## 🧭 Design Principles
+## Design Principles
 
 1. **AI + deterministic logic.** The LLM extracts information; critical decisions are made by plain Python rules, not by the model.
 2. **Human-in-the-loop.** Missing information, unusual requests, conflicts, and unsupported lesson types always go to a person.
 3. **Reliability and traceability.** Duplicate detection, database constraints, and audit logs make every decision explainable.
 4. **Modularity.** Parsing, assignment, validation, storage, and integrations live in separate modules that are easy to test and extend.
 
-## 🗺️ Roadmap
+## Roadmap
 
 - [ ] Homebase integration for real-time staff availability
 - [ ] Advanced scheduling and optimization algorithms
@@ -286,10 +286,10 @@ DATABASE_PATH=project/data/surf_school.db
 - [ ] Analytics and operational reporting
 - [ ] Multi-location support
 
-## 🎯 Project Goals
+## Project Goals
 
 Build a reliable AI operations assistant that handles repetitive administrative work while keeping business owners and staff in control of important decisions. The project explores practical applications of LLMs, NLP, workflow automation, API integrations, resource allocation, human-in-the-loop systems, and backend development.
 
-## 📄 License
+## License
 
 This project is currently developed as an independent software project. A license will be added once one is selected.
